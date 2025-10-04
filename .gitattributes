@@ -1,0 +1,22 @@
+# Force Java files to be counted as Java
+*.java linguist-language=Java
+
+# Force SQL files to be counted as SQL
+*.sql linguist-language=SQL
+
+# Ignore JavaScript config or node files from language stats
+package-lock.json linguist-vendored
+package.json linguist-vendored
+*.js linguist-vendored
+*.jsx linguist-vendored
+
+# Ignore IDE/editor files
+.vscode/* linguist-vendored
+*.iml linguist-vendored
+*.class linguist-vendored
+*.log linguist-vendored
+
+# Ignore other config or generated files
+*.xml linguist-vendored
+*.yml linguist-vendored
+*.properties linguist-vendored
