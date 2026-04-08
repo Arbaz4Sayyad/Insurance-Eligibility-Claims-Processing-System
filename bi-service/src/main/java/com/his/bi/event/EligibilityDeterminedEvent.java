@@ -1,0 +1,17 @@
+package com.his.bi.event;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class EligibilityDeterminedEvent {
+    private Long appId;
+    private String citizenName;
+    private String planName;
+    private String status;
+    private Double benefitAmount;
+    private String denialReason;
+}

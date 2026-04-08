@@ -1,0 +1,68 @@
+global:
+  image:
+    repository: his-docker-registry
+    tag: latest
+    pullPolicy: Always
+  
+  # External Cloud-Managed RDS (FAANG Best Practice)
+  database:
+    host: his-production-db.us-east-1.rds.amazonaws.com
+    port: 5432
+    username: his_admin
+    password: SuperSecretPassword123!
+
+  # Kafka Infrastructure
+  kafka:
+    bootstrapServers: kafka-cluster-kafka-bootstrap:9092
+
+# Microservices Map
+services:
+  eureka-server:
+    port: 8761
+    replicas: 1
+    resources: { cpu: 200m, memory: 512Mi }
+  config-server:
+    port: 8888
+    replicas: 1
+    resources: { cpu: 200m, memory: 512Mi }
+  api-gateway:
+    port: 8080
+    replicas: 2
+    resources: { cpu: 500m, memory: 1Gi }
+  user-service:
+    port: 8081
+    replicas: 2
+    resources: { cpu: 300m, memory: 768Mi }
+  ar-service:
+    port: 8082
+    replicas: 2
+    resources: { cpu: 300m, memory: 768Mi }
+  dc-service:
+    port: 8083
+    replicas: 2
+    resources: { cpu: 300m, memory: 768Mi }
+  ed-service:
+    port: 8084
+    replicas: 2
+    resources: { cpu: 500m, memory: 1Gi }
+  co-service:
+    port: 8085
+    replicas: 2
+    resources: { cpu: 300m, memory: 768Mi }
+  bi-service:
+    port: 8086
+    replicas: 2
+    resources: { cpu: 300m, memory: 768Mi }
+  analytics-service:
+    port: 8087
+    replicas: 2
+    resources: { cpu: 300m, memory: 768Mi }
+
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    - host: his.state.gov
+      paths:
+        - path: /
+          pathType: Prefix

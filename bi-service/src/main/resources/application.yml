@@ -1,0 +1,7 @@
+spring:
+  application:
+    name: bi-service
+  config:
+    import: "optional:configserver:http://config-server:8888"
+  profiles:
+    active: dev

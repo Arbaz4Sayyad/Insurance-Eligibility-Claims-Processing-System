@@ -1,0 +1,27 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/his_ar
+    username: his_user
+    password: his_password
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  cloud:
+    stream:
+      function:
+        definition: applicationCreated
+      bindings:
+        applicationCreated-out-0:
+          destination: application-created-topic
+      kafka:
+        binder:
+          brokers: kafka:29092
+
+# Custom AR configuration
+ar:
+  encryption:
+    secret: "3c5fG9H1j2K3l4N5p6Q7r8S9t0U1v2W3"

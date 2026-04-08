@@ -1,0 +1,77 @@
+spring:
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:5173"
+              - "http://localhost:3000"
+              - "http://localhost:18081"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+              - PATCH
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 3600
+      routes:
+        - id: analytics-service
+          uri: lb://ANALYTICS-SERVICE
+          predicates:
+            - Path=/api/analytics/**
+
+        - id: analytics-ws
+          uri: lb:ws://ANALYTICS-SERVICE
+          predicates:
+            - Path=/ws-analytics/**
+          filters:
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+            - PreserveHostHeader
+
+        - id: application-service
+          uri: lb://AR-SERVICE
+          predicates:
+            - Path=/api/applications/**
+          filters:
+            - RewritePath=/api/applications/(?<remaining>.*), /api/ar/${remaining}
+
+        - id: user-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - RewritePath=/api/auth/(?<remaining>.*), /api/auth/${remaining}
+
+        - id: ar-service
+          uri: lb://AR-SERVICE
+          predicates:
+            - Path=/api/ar/**
+
+        - id: dc-service
+          uri: lb://DC-SERVICE
+          predicates:
+            - Path=/api/dc/**
+
+        - id: ed-service
+          uri: lb://ED-SERVICE
+          predicates:
+            - Path=/api/ed/**
+
+        - id: co-service
+          uri: lb://CO-SERVICE
+          predicates:
+            - Path=/api/co/**
+
+        - id: bi-service
+          uri: lb://BI-SERVICE
+          predicates:
+            - Path=/api/bi/**
+
+        - id: dashboard-aggregator
+          uri: lb://DASHBOARD-AGGREGATOR
+          predicates:
+            - Path=/api/dashboard/**

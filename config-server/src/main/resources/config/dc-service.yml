@@ -1,0 +1,31 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/his_dc
+    username: his_user
+    password: his_password
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  cloud:
+    stream:
+      function:
+        definition: applicationCreated;dataCaptured
+      bindings:
+        applicationCreated-in-0:
+          destination: application-created-topic
+          group: dc-group
+        dataCaptured-out-0:
+          destination: data-captured-topic
+      kafka:
+        binder:
+          brokers: kafka:29092
+
+# Custom DC configuration - routes through API Gateway inside the cluster
+dc:
+  validation:
+    client:
+      url: http://api-gateway:8080

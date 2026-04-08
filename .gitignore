@@ -1,5 +1,5 @@
-# Ignore all the target directory
-/target/
+# Ignore all target directories (for Maven)
+**/target/
 
 # Ignore Maven wrapper
 .mvn/
@@ -38,11 +38,13 @@ out/
 .DS_Store
 Thumbs.db
 
-# Ignore node_modules folder for Angular
-frontend/node_modules/
-node_modules/
-# Ignore Angular build directory
-frontend/dist/
+# Ignore node_modules folder
+**/node_modules/
+
+# Ignore build directories
+**/dist/
+**/build/
+**/out/
 
 # Ignore npm debug and package-lock files
 npm-debug.log*
@@ -59,6 +61,9 @@ frontend/src/environments/environment*.ts
 # Ignore MySQL dumps and database backups
 *.sql
 *.db
+
+# Ignore persistent data volumes
+data/
 
 # Ignore generated coverage reports
 coverage/

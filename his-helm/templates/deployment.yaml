@@ -1,0 +1,53 @@
+{{- range $serviceName, $serviceConfig := .Values.services }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $serviceName }}
+  labels:
+    app: {{ $serviceName }}
+spec:
+  replicas: {{ $serviceConfig.replicas }}
+  selector:
+    matchLabels:
+      app: {{ $serviceName }}
+  template:
+    metadata:
+      labels:
+        app: {{ $serviceName }}
+    spec:
+      containers:
+        - name: {{ $serviceName }}
+          image: "{{ $.Values.global.image.repository }}/{{ $serviceName }}:{{ $.Values.global.image.tag }}"
+          imagePullPolicy: {{ $.Values.global.image.pullPolicy }}
+          ports:
+            - containerPort: {{ $serviceConfig.port }}
+          resources:
+            requests:
+              cpu: {{ $serviceConfig.resources.cpu }}
+              memory: {{ $serviceConfig.resources.memory }}
+            limits:
+              cpu: {{ $serviceConfig.resources.cpu }}
+              memory: {{ $serviceConfig.resources.memory }}
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: prod
+            - name: SPRING_CONFIG_IMPORT
+              value: "optional:configserver:http://config-server:8888"
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://{{ $.Values.global.database.host }}:{{ $.Values.global.database.port }}/his_{{ $serviceName | replace "-" "_" }}"
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: {{ $.Values.global.kafka.bootstrapServers }}
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: {{ $serviceConfig.port }}
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: {{ $serviceConfig.port }}
+            initialDelaySeconds: 30
+            periodSeconds: 10
+---
+{{- end }}

@@ -1,0 +1,30 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/his_analytics
+    username: his_user
+    password: his_password
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  cloud:
+    stream:
+      function:
+        definition: applicationCreated;dataCaptured;eligibilityDetermined
+      bindings:
+        applicationCreated-in-0:
+          destination: application-created-topic
+          group: analytics-group
+        dataCaptured-in-0:
+          destination: data-captured-topic
+          group: analytics-group
+        eligibilityDetermined-in-0:
+          destination: eligibility-determined-topic
+          group: analytics-group
+      kafka:
+        binder:
+          brokers: kafka:29092

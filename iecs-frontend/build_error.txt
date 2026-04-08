@@ -1,0 +1,7 @@
+﻿
+> iecs-frontend@0.0.0 build
+> vite build
+
+[36mvite v8.0.6 [32mbuilding client environment for production...[36m[39m
+[2K
+transforming...Γ£ô 2764 modules transformed.
