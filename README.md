@@ -1,116 +1,260 @@
-# 🛡️ IECS Enterprise: Integrated Eligibility & Claims System
+# 🛡️ IECS Enterprise — Distributed Eligibility & Claims Processing System
 
-[![React](https://img.shields.io/badge/Frontend-React%2018-blue?style=for-the-badge&logo=react)](https://reactjs.org/)
-[![Spring Boot](https://img.shields.io/badge/Backend-Spring%20Boot-green?style=for-the-badge&logo=springboot)](https://spring.io/projects/spring-boot)
-[![Docker](https://img.shields.io/badge/Infrastructure-Docker-blue?style=for-the-badge&logo=docker)](https://www.docker.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
-
-**IECS Enterprise** is a mission-critical SaaS platform designed to modernize health insurance eligibility determination and claims processing. Built with a high-performance **Microservices Architecture**, it delivers a seamless, real-time experience for Citizens, Caseworkers, and Administrators.
+[![React](https://img.shields.io/badge/Frontend-React%2018-blue?style=for-the-badge\&logo=react)](https://reactjs.org/)
+[![Spring Boot](https://img.shields.io/badge/Backend-Spring%20Boot-green?style=for-the-badge\&logo=springboot)](https://spring.io/projects/spring-boot)
+[![Docker](https://img.shields.io/badge/Infrastructure-Docker-blue?style=for-the-badge\&logo=docker)](https://www.docker.com/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 
 ---
 
-## 📸 UI Showcase (Recruiter View)
+## 🚀 Overview
 
-### 🎨 Modern Dashboard Experience
-![Dashboard Home](./iecs-frontend/public/assets/screenshots/dashboard_home.png)
-*Figure 1: Citizen Dashboard showing application timeline and benefit summary.*
+**IECS Enterprise** is a **distributed microservices-based platform** designed to handle **health insurance eligibility determination and claims processing** at scale.
 
-### 🛠️ Multi-step Application Workflow
-![Application Form](./iecs-frontend/public/assets/screenshots/application_form.png)
-*Figure 2: Intelligent application registration flow with real-time validation.*
-
-### 🔔 Real-time Notifications & Inbox
-![Notification Inbox](./iecs-frontend/public/assets/screenshots/notification_inbox.png)
-*Figure 3: System alerts and communication hub with read/unread tracking.*
+The system is built to support **multiple user roles (Citizens, Caseworkers, Admins)** while ensuring **high availability, scalability, and secure data processing**.
 
 ---
 
-## 🏗️ System Architecture
+## 🎯 Problem Statement
 
-Custom-built microservices ecosystem designed for high availability and modular scaling.
+Legacy insurance systems are:
+
+* Monolithic and hard to scale
+* Slow in processing eligibility & claims
+* Difficult to maintain and extend
+
+---
+
+## 💡 Solution
+
+IECS Enterprise solves these challenges using:
+
+* **Microservices architecture** for modular scalability
+* **Event-driven workflows** for decoupled processing
+* **Centralized API Gateway** for routing & security
+* **Role-based access control (RBAC)** for secure operations
+
+👉 Result: **Faster processing, better scalability, and improved system reliability**
+
+---
+
+## 🏗️ High-Level Architecture
 
 ![Architecture Diagram](./iecs-frontend/public/assets/architecture.png)
 
-### 🧩 Services Map
-*   **User Service**: OAuth2/JWT auth & RBAC management.
-*   **DC Service (Data Collection)**: Captures user demographic and financial data.
-*   **ED Service (Eligibility)**: Rule-based engine for benefit determination.
-*   **AR Service (App Registration)**: Manages lifecycle of benefit applications.
-*   **BI Service (Benefit Issuance)**: Orchestrates subsidy disbursements.
+---
+
+## 🧩 Microservices Breakdown
+
+| Service                            | Responsibility                                     |
+| ---------------------------------- | -------------------------------------------------- |
+| **User Service**                   | Authentication, authorization (JWT + OAuth2), RBAC |
+| **Application Registration (AR)**  | Handles application lifecycle                      |
+| **Data Collection (DC)**           | Captures demographic & financial data              |
+| **Eligibility Determination (ED)** | Rule engine for benefit eligibility                |
+| **Benefit Issuance (BI)**          | Processes and disburses benefits                   |
+| **Notification Service**           | Handles alerts, inbox, communication               |
 
 ---
 
-## 🔗 API Documentation (Swagger)
+## 🔄 Request Flow (System Design)
 
-All backend services are self-documented using **OpenAPI 3.0 (Swagger)**. When running the full stack, documentation is accessible at:
-
-| Service | Swagger UI Endpoint |
-| :--- | :--- |
-| **API Gateway** | `http://localhost:8080/swagger-ui.html` |
-| **User Service** | `http://localhost:8081/swagger-ui.html` |
-| **Eligibility Service** | `http://localhost:8082/swagger-ui.html` |
-| **Notification Service** | `http://localhost:8083/swagger-ui.html` |
-
----
-
-## 🎯 Resume Highlights (For Your CV)
-
-*   **Architected** a distributed microservices ecosystem using **Spring Boot 3.x** and **Spring Cloud**, managing 6+ independent services with **Eureka** discovery and **Spring Cloud Gateway**.
-*   **Engineered** a premium, high-performance frontend using **React 18**, **Vite**, and **Tailwind CSS**, featuring dark-mode design systems and complex state orchestration with **Context API**.
-*   **Optimized** system responsiveness by implementing **Redis Caching** and a role-based navigation system that reduced client-side routing latency.
-*   **Containerized** the entire production environment with **Docker & Docker Compose**, ensuring environment parity and enabling seamless deployment pipelines.
-*   **Developed** a real-time notification system and intelligent rule engine for eligibility determination, improving processing speed by automating background verification.
+1. User submits application via frontend
+2. Request routed through **API Gateway**
+3. Authentication handled via **User Service**
+4. Data collected via **DC Service**
+5. Eligibility evaluated by **ED Service**
+6. Benefits processed via **BI Service**
+7. Notifications sent asynchronously
 
 ---
 
-## 🧠 Technical Interview Preparation
+## 🧠 System Design Decisions
 
-### Top 5 Interview Questions for this Project:
+### 1. Microservices Architecture
 
-1.  **Microservices Communication**: *"How do your microservices interact, and why did you choose Spring Cloud Gateway over a simple load balancer?"*
-    *   *Ans:* Centralized routing, cross-cutting concerns (security/logging), and dynamic service discovery.
-2.  **State Management**: *"How do you maintain user state and role-based permissions across a React frontend with persistent routing?"*
-    *   *Ans:* Global Context Providers coupled with JWT session validation in Axios interceptors.
-3.  **Data Consistency**: *"In a distributed system like IECS, how do you handle data consistency between the User Service and Application Registration?"*
-    *   *Ans:* Current implementation uses shared PostgreSQL; future logic point to Saga patterns or Eventual Consistency via Kafka.
-4.  **Performance Optimization**: *"What steps did you take to ensure the dashboard remains performant under heavy data loads?"*
-    *   *Ans:* Vite build optimization, lazy-loading components, and efficient Recharts rendering.
-5.  **Security Model**: *"Explain your RBAC implementation and how sensitive citizen data is protected mid-transit."*
-    *   *Ans:* Spring Security with JWT filters and HTTPS/TLS for service-to-service communication.
+* Services are independently deployable
+* Loose coupling between components
+
+👉 Benefit: **Independent scaling + better maintainability**
+
+---
+
+### 2. API Gateway (Spring Cloud Gateway)
+
+* Centralized routing layer
+* Handles authentication, logging, rate limiting
+
+👉 Benefit: **Simplified client interaction + security**
+
+---
+
+### 3. Service Discovery (Eureka)
+
+* Dynamic service registration & lookup
+
+👉 Benefit: **Resilience + flexibility in scaling**
+
+---
+
+### 4. Redis Caching
+
+* Used for frequently accessed data
+
+👉 Result: **Reduced latency + lower DB load**
+
+---
+
+### 5. PostgreSQL (Relational DB)
+
+* Ensures strong consistency across services
+
+👉 Trade-off:
+
+* Less flexible than NoSQL
+* But provides ACID guarantees
+
+---
+
+## 📈 Scalability Strategy
+
+* Stateless services → horizontal scaling
+* Load balancing via API Gateway
+* Redis caching for hot data
+* Containerized deployment using Docker
+
+---
+
+## ⚠️ Trade-offs
+
+* Increased system complexity
+* Inter-service communication overhead
+* Data consistency challenges in distributed systems
+
+---
+
+## 🛡️ Security Model
+
+* JWT-based authentication
+* OAuth2 for SSO integration
+* Role-Based Access Control (RBAC)
+* HTTPS/TLS for secure communication
+
+---
+
+## ⚡ Key Features
+
+* Multi-role system (Citizen, Caseworker, Admin)
+* Real-time notifications & inbox
+* Rule-based eligibility engine
+* Modular microservices architecture
+* Secure API communication
 
 ---
 
 ## 🛠️ Tech Stack
 
 ### Frontend
-- **Framework**: React 18 (Vite)
-- **Styling**: Tailwind CSS + Vanilla CSS (Custom Design System)
-- **Animations**: Framer Motion
-- **State**: Context API (Application, Notification & Staff contexts)
+
+* React 18 (Vite)
+* Tailwind CSS
+* Framer Motion
+* Context API (state management)
 
 ### Backend
-- **Framework**: Spring Boot 3 / Spring Cloud
-- **Discovery**: Netflix Eureka
-- **Persistence**: PostgreSQL + Hibernate JPA
-- **Caching**: Redis
+
+* Spring Boot 3
+* Spring Cloud (Gateway, Eureka)
+* PostgreSQL + Hibernate
+* Redis
+
+### Infrastructure
+
+* Docker & Docker Compose
+
+---
+
+## 📊 API Documentation
+
+Swagger UI available when services are running:
+
+| Service              | Endpoint                              |
+| -------------------- | ------------------------------------- |
+| API Gateway          | http://localhost:8080/swagger-ui.html |
+| User Service         | http://localhost:8081/swagger-ui.html |
+| Eligibility Service  | http://localhost:8082/swagger-ui.html |
+| Notification Service | http://localhost:8083/swagger-ui.html |
+
+---
+
+## 📸 UI Showcase
+
+### Dashboard
+
+![Dashboard](./iecs-frontend/public/assets/screenshots/dashboard_home.png)
+
+### Application Flow
+
+![Application](./iecs-frontend/public/assets/screenshots/application_form.png)
+
+### Notifications
+
+![Notifications](./iecs-frontend/public/assets/screenshots/notification_inbox.png)
+
+---
+
+## 🧪 Testing Strategy
+
+* Unit Testing: JUnit, Mockito
+* Integration Testing: Spring Boot Test
+* Frontend Testing: React Testing Library
 
 ---
 
 ## 🚦 Getting Started
 
-### Local Development (Frontend)
-```bash
+### Frontend
+
+```bash id="zgl32n"
 cd iecs-frontend
 npm install
 npm run dev
 ```
 
 ### Full System (Docker)
-```bash
+
+```bash id="zk2h1c"
 docker-compose up --build
 ```
 
 ---
 
-## 📄 License
-MIT License. Built for scale. Designed for impact. 💙
+## 🚀 Future Improvements
+
+* Event-driven architecture using Kafka
+* Saga pattern for distributed transactions
+* Centralized logging (ELK Stack)
+* Distributed tracing (Zipkin/Jaeger)
+
+---
+
+## 📌 Key Learnings
+
+* Designing scalable microservices systems
+* Handling distributed system challenges
+* Implementing secure RBAC-based systems
+
+---
+
+## 👨‍💻 Author
+
+**Arbaz Sayyad**
+Full Stack Software Engineer
+Java • Spring Boot • Microservices • Distributed Systems
+
+* 🔗 https://www.linkedin.com/in/arbaz-sayyad/
+* 💻 https://github.com/Arbaz4Sayyad
+
+---
+
+⭐ If you found this project useful, consider giving it a star!
