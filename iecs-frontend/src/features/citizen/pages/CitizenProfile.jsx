@@ -12,27 +12,78 @@ import {
   Smartphone,
   CreditCard
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { useAuth } from '../../../context/AuthContext';
+import api from '../../../api/apiClient';
 
 const CitizenProfile = () => {
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
   const [profile, setProfile] = React.useState({
-    firstName: 'Alexander',
-    lastName: 'Wright',
-    email: 'citizen@iecs.com',
-    phone: '+91 98765 43210',
-    address: '123 Enterprise Way, Tech Sector 4',
-    city: 'Mumbai',
-    state: 'Maharashtra',
-    zip: '400001',
-    ssn: '***-**-9021',
-    mfa: true
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    state: '',
+    zip: '',
+    ssn: '',
+    mfaEnabled: false
   });
 
-  const handleSave = () => {
-    setIsEditing(false);
-    // Simulation: show success toast
+  React.useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        if (user?.id) {
+          const res = await api.get(`/users/${user.id}`);
+          const userData = res.success ? res.data : res;
+          
+          if (userData) {
+            setProfile({
+              firstName: userData.firstName || '',
+              lastName: userData.lastName || '',
+              email: userData.email || '',
+              phone: userData.phone || '',
+              address: userData.address || '',
+              city: userData.city || '',
+              state: userData.state || '',
+              zip: userData.zip || '',
+              ssn: userData.ssn || '',
+              mfaEnabled: userData.mfaEnabled || false
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load profile', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchProfile();
+  }, [user]);
+
+  const handleSave = async () => {
+    try {
+      setIsLoading(true);
+      const payload = {
+        ...profile,
+        username: profile.firstName // Maintain username mapping for now
+      };
+      
+      const response = await api.put(`/users/${user.id}/profile`, payload);
+      
+      if (response && response.success) {
+        setIsEditing(false);
+      }
+    } catch (err) {
+      console.error('Update failed', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  if (isLoading) return <div className="p-20 text-center font-black text-slate-500 uppercase tracking-widest">Synchronizing Identity...</div>;
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-20">
@@ -125,6 +176,7 @@ const CitizenProfile = () => {
                         <Input 
                          value={profile.email} 
                          disabled={!isEditing} 
+                         onChange={(e) => setProfile({...profile, email: e.target.value})}
                          className="pl-10 bg-slate-950 border-slate-800 font-bold"
                         />
                      </div>
@@ -136,6 +188,7 @@ const CitizenProfile = () => {
                         <Input 
                          value={profile.phone} 
                          disabled={!isEditing} 
+                         onChange={(e) => setProfile({...profile, phone: e.target.value})}
                          className="pl-10 bg-slate-950 border-slate-800 font-bold"
                         />
                      </div>
@@ -151,12 +204,13 @@ const CitizenProfile = () => {
                          disabled={!isEditing}
                          className="w-full bg-slate-950 border border-slate-800 rounded-2xl p-4 pl-10 h-24 text-sm text-white focus:border-primary-500/50 outline-none transition-all resize-none font-bold"
                          value={profile.address}
+                         onChange={(e) => setProfile({...profile, address: e.target.value})}
                         />
                      </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
-                     <Card className={`p-4 border-slate-800 flex items-center justify-between transition-all shadow-lg ${profile.mfa ? 'bg-emerald-500/10' : 'bg-slate-950'}`}>
+                     <Card className={`p-4 border-slate-800 flex items-center justify-between transition-all shadow-lg ${profile.mfaEnabled ? 'bg-emerald-500/10' : 'bg-slate-950'}`}>
                         <div className="flex items-center gap-3">
                            <Smartphone size={18} className="text-slate-500" />
                            <div>

@@ -1,9 +1,36 @@
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://discovery-server:8761/eureka/
   instance:
     prefer-ip-address: true
+
+spring:
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: kafka:29092
+          auto-create-topics: true
+          # Global Retry logic
+          retry:
+            initial-interval: 1000
+            max-attempts: 3
+            multiplier: 2.0
+        # Enable DLQ globally for all consumers
+        bindings:
+          applicationCreated-in-0:
+            consumer:
+              enable-dlq: true
+              dlq-name: application-created-dlq
+          dataCaptured-in-0:
+            consumer:
+              enable-dlq: true
+              dlq-name: data-captured-dlq
+          eligibilityDetermined-in-0:
+            consumer:
+              enable-dlq: true
+              dlq-name: eligibility-determined-dlq
 
 management:
   endpoints:
@@ -13,3 +40,30 @@ management:
   endpoint:
     health:
       show-details: always
+    prometheus:
+      enabled: true
+  tracing:
+    sampling:
+      probability: 1.0 # Sample all requests for demo/dev
+  zipkin:
+    tracing:
+      endpoint: http://zipkin:9411/api/v2/spans
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      default:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        waitDurationInOpenState: 5s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+  retry:
+    instances:
+      default:
+        maxAttempts: 3
+        waitDuration: 2s
+        enableExponentialBackoff: true
+        exponentialBackoffMultiplier: 2

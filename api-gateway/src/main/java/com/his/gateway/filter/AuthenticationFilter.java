@@ -30,24 +30,35 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     @Override
     public GatewayFilter apply(Config config) {
         return ((exchange, chain) -> {
-            if (validator.isSecured.test(exchange.getRequest())) {
+            ServerHttpRequest request = exchange.getRequest();
+            if (validator.isSecured.test(request)) {
                 // Check if Authorization header is present
-                if (!exchange.getRequest().getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
+                if (!request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
                     return onError(exchange, "Missing Authorization Header", HttpStatus.UNAUTHORIZED);
                 }
 
-                String authHeader = exchange.getRequest().getHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
+                String authHeader = request.getHeaders().get(HttpHeaders.AUTHORIZATION).get(0);
                 if (authHeader != null && authHeader.startsWith("Bearer ")) {
                     authHeader = authHeader.substring(7);
                 }
 
                 try {
                     jwtUtils.validateJwtToken(authHeader);
+                    
+                    // Extract claims for identity propagation
+                    var claims = jwtUtils.getClaims(authHeader);
+                    
+                    // Mutate request to include identity headers
+                    request = exchange.getRequest().mutate()
+                            .header("X-User-Id", String.valueOf(claims.get("userId")))
+                            .header("X-User-Role", String.valueOf(claims.get("roles")))
+                            .build();
+
                 } catch (Exception e) {
                     return onError(exchange, "Un-Authorized Access: " + e.getMessage(), HttpStatus.UNAUTHORIZED);
                 }
             }
-            return chain.filter(exchange);
+            return chain.filter(exchange.mutate().request(request).build());
         });
     }
 

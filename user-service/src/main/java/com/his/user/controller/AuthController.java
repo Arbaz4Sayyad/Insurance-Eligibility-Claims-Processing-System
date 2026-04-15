@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
@@ -61,7 +60,7 @@ public class AuthController {
                 .map(item -> item.getAuthority())
                 .map(r -> {
                     if (r.equals("ROLE_ADMIN")) return "ADMIN";
-                    if (r.equals("ROLE_CASEWORKER")) return "CASEWORKER";
+                    if (r.equals("ROLE_CASE_WORKER")) return "CASEWORKER";
                     return "CITIZEN";
                 })
                 .findFirst()

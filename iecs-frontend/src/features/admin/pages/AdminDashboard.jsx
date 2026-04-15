@@ -1,13 +1,13 @@
 import React from 'react';
 import { StatCard } from '../../../components/common/Stats';
-import { Card, Button, Badge, Skeleton } from '../../../components/common/UIComponents';
+import { Card, Button, Badge } from '../../../components/common/UIComponents';
+import { Skeleton } from '../../../components/common/Skeleton';
 import dashboardService from '../../../services/dashboardService';
 import { 
   Users, 
   UserCheck, 
   BarChart3, 
   ShieldAlert,
-  Plus,
   ArrowUpRight,
   Activity,
   Server,
@@ -81,10 +81,6 @@ const AdminDashboard = () => {
         <div className="flex items-center gap-3">
            <Button variant="outline" size="sm" onClick={fetchStats} className="bg-slate-900/50 border-slate-700 hover:border-slate-500">
              Export Logs
-           </Button>
-           <Button variant="primary" size="sm" className="gap-2 shadow-primary-500/20">
-             <Plus size={16} />
-             Add New Plan
            </Button>
         </div>
       </div>

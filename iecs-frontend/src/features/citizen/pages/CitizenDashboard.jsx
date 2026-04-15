@@ -1,5 +1,6 @@
 import React from 'react';
-import { Card, Button, Badge, Skeleton } from '../../../components/common/UIComponents';
+import { Card, Button, Badge } from '../../../components/common/UIComponents';
+import { Skeleton } from '../../../components/common/Skeleton';
 import dashboardService from '../../../services/dashboardService';
 import { 
   FileText, 
@@ -35,14 +36,6 @@ const CitizenDashboard = () => {
   const [isSupportOpen, setIsSupportOpen] = React.useState(false);
   const [supportMsg, setSupportMsg] = React.useState('');
   
-  const myApplications = applications; // In real app, filter by user ID
-
-  const benefits = [
-    { name: 'Medical Care Plus', description: 'Comprehensive health coverage for families.', eligibility: 'Income < $50,000' },
-    { name: 'Food Assistance', description: 'Monthly credit for essential nutrition.', eligibility: 'Household > 2 & Income < $30,000' },
-    { name: 'Child Care Subsidy', description: 'Support for working parents with children under 12.', eligibility: 'Working status: Active' },
-  ];
-
   const fetchDashboard = async () => {
     try {
       const response = await dashboardService.getCitizenDashboard();
@@ -59,6 +52,14 @@ const CitizenDashboard = () => {
   React.useEffect(() => {
     fetchDashboard();
   }, []);
+
+  const benefits = [
+    { name: 'Medical Care Plus', description: 'Comprehensive health coverage for families.', eligibility: 'Income < $50,000' },
+    { name: 'Food Assistance', description: 'Monthly credit for essential nutrition.', eligibility: 'Household > 2 & Income < $30,000' },
+    { name: 'Child Care Subsidy', description: 'Support for working parents with children under 12.', eligibility: 'Working status: Active' },
+  ];
+
+  const myApplications = data?.activeApplications || [];
 
   const handleSupportSubmit = () => {
     if (supportMsg.trim()) {
@@ -132,7 +133,7 @@ const CitizenDashboard = () => {
            </div>
 
             <div className="grid grid-cols-1 gap-4">
-              {myApplications.length > 0 ? myApplications.map((app, idx) => (
+              {myApplications.length > 0 ? myApplications.slice(0, 3).map((app, idx) => (
                 <Card key={app.id} className="p-0 overflow-hidden group hover:border-primary-500/20 transition-all border-slate-800 shadow-xl bg-slate-900/10">
                   <div className="p-5 bg-slate-900/40 flex items-center justify-between border-b border-slate-800">
                      <div className="flex items-center gap-4">
@@ -160,7 +161,12 @@ const CitizenDashboard = () => {
                               <span className="text-[9px] font-black text-slate-600 uppercase tracking-tight">Last Activity: Just now</span>
                            </div>
                         </div>
-                        <Button variant="ghost" size="xs" className="gap-2 group-hover:text-primary-400 font-black uppercase tracking-widest p-0 border-none">
+                        <Button 
+                          variant="ghost" 
+                          size="xs" 
+                          className="gap-2 group-hover:text-primary-400 font-black uppercase tracking-widest p-0 border-none"
+                          onClick={() => navigate('/dashboard/status')}
+                        >
                            Timeline Details
                            <ChevronRight size={14} />
                         </Button>
@@ -172,6 +178,17 @@ const CitizenDashboard = () => {
                    <Inbox size={48} className="mx-auto text-slate-800 mb-4" />
                    <p className="text-xs text-slate-500 font-black uppercase tracking-widest">No Active Enrollments Detected</p>
                 </Card>
+              )}
+              
+              {myApplications.length > 3 && (
+                <Button 
+                  variant="outline" 
+                  className="w-full border-slate-800 hover:border-slate-600 text-[10px] uppercase font-black tracking-widest py-4 bg-slate-950/50"
+                  onClick={() => navigate('/dashboard/status')}
+                >
+                  View All {myApplications.length} Applications
+                  <ArrowRight size={14} className="ml-2" />
+                </Button>
               )}
             </div>
 

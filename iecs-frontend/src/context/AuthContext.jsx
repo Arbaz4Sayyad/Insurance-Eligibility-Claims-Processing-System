@@ -46,6 +46,9 @@ export const AuthProvider = ({ children }) => {
 
   const logout = () => {
     localStorage.removeItem('iecs-token');
+    localStorage.removeItem('iecs-applications');
+    localStorage.removeItem('iecs-notifications');
+    localStorage.removeItem('iecs_staff');
     setUser(null);
     navigate('/login');
   };

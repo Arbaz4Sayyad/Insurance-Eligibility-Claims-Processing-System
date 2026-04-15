@@ -22,4 +22,6 @@ public class CitizenEntity {
 
     @Column(unique = true, nullable = false)
     private String ssn; // Encrypted
+
+    private Long userId; // Linked to global user-service ID
 }

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import api from './axiosConfig';
+import api from './apiClient';
 import { useNotification } from '../context/NotificationContext';
 import { useAuth } from '../context/AuthContext';
 

@@ -13,13 +13,26 @@ spring:
   cloud:
     stream:
       function:
-        definition: applicationCreated
+        definition: eligibilityDeterminedConsumer;dataCapturedConsumer;applicationCreated
       bindings:
         applicationCreated-out-0:
           destination: application-created-topic
+        dataCapturedConsumer-in-0:
+          destination: data-captured-topic
+          group: ar-group
+        eligibilityDeterminedConsumer-in-0:
+          destination: eligibility-determined-topic
+          group: ar-group
       kafka:
         binder:
           brokers: kafka:29092
+
+logging:
+  level:
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    com.his.ar: DEBUG
+    org.springframework.security: DEBUG
 
 # Custom AR configuration
 ar:

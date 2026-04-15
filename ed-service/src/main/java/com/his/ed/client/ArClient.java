@@ -6,11 +6,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import java.time.LocalDate;
 
-@FeignClient(name = "ar-service", url = "${ed.client.ar.url}")
+@FeignClient(name = "ar-service")
 public interface ArClient {
     
-    @GetMapping("/api/ar/applications/{appId}")
-    ArAppResponse getApplication(@PathVariable("appId") Long appId);
+    @GetMapping("/api/ar/{appId}")
+    com.his.ed.payload.response.ApiResponse<java.util.Map<String, Object>> getApplication(@PathVariable("appId") Long appId);
 
     class ArAppResponse {
         private Long id;

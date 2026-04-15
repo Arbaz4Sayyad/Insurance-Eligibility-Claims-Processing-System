@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { useAuth } from './AuthContext';
 import { X, CheckCircle2, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -8,13 +9,24 @@ export const NotificationProvider = ({ children }) => {
   // Toast notifications (existing)
   const [toastNotifications, setToastNotifications] = useState([]);
 
-  // Persistent notifications (new)
-  const [persistentNotifications, setPersistentNotifications] = useState([
-    { id: 1, title: 'Application Approved', message: 'Your Medical Assistance (MA) benefit has been approved. Proceed to benefits to view your roadmap.', type: 'SUCCESS', read: false, time: '2 hours ago' },
-    { id: 2, title: 'Document Required', message: 'A caseworker has requested additional income verification for your SNAP application.', type: 'WARNING', read: false, time: '5 hours ago' },
-    { id: 3, title: 'Security Sync', message: 'Your profile was successfully synchronized with regional database nodes.', type: 'INFO', read: true, time: '1 day ago' },
-    { id: 4, title: 'Payment Scheduled', message: 'Benefit disbursement of ₹1,500 has been initiated for April.', type: 'SUCCESS', read: true, time: '2 days ago' },
-  ]);
+  const { user } = useAuth();
+
+  // Persistent notifications (cleared on logout)
+  const [persistentNotifications, setPersistentNotifications] = useState([]);
+
+  useEffect(() => {
+    if (!user) {
+      setPersistentNotifications([]);
+    } else if (user?.email === 'citizen@iecs.com' && persistentNotifications.length === 0) {
+      // Re-seed demo notifications only for the demo account
+      setPersistentNotifications([
+        { id: 1, title: 'Application Approved', message: 'Your Medical Assistance (MA) benefit has been approved. Proceed to benefits to view your roadmap.', type: 'SUCCESS', read: false, time: '2 hours ago' },
+        { id: 2, title: 'Document Required', message: 'A caseworker has requested additional income verification for your SNAP application.', type: 'WARNING', read: false, time: '5 hours ago' },
+        { id: 3, title: 'Security Sync', message: 'Your profile was successfully synchronized with regional database nodes.', type: 'INFO', read: true, time: '1 day ago' },
+        { id: 4, title: 'Payment Scheduled', message: 'Benefit disbursement of ₹1,500 has been initiated for April.', type: 'SUCCESS', read: true, time: '2 days ago' },
+      ]);
+    }
+  }, [user]);
 
   const showNotification = useCallback((message, type = 'info') => {
     const id = Date.now();

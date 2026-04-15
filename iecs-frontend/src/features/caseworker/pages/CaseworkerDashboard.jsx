@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { StatCard } from '../../../components/common/Stats';
-import { Card, Button, Badge, Skeleton } from '../../../components/common/UIComponents';
+import { Card, Button, Badge } from '../../../components/common/UIComponents';
+import { Skeleton } from '../../../components/common/Skeleton';
 import { 
   ClipboardCheck, 
   Clock, 
@@ -23,7 +24,13 @@ import { useApplications } from '../../../context/ApplicationContext';
 const CaseworkerDashboard = () => {
   const navigate = useNavigate();
   const { applications } = useApplications();
-  const [isLoading] = React.useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate initial aggregation sync
+    const timer = setTimeout(() => setIsLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
 
   if (isLoading) {
     return (
@@ -85,55 +92,65 @@ const CaseworkerDashboard = () => {
                 <div className="p-6 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/20">
                   <h3 className="text-sm font-black text-white uppercase tracking-widest">Global Application Queue</h3>
                 </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="text-slate-500 text-[10px] font-black uppercase tracking-widest border-b border-slate-800 bg-slate-950">
-                        <th className="px-6 py-4">Applicant Profile</th>
-                        <th className="px-6 py-4">Submission</th>
-                        <th className="px-6 py-4">SLA Status</th>
-                        <th className="px-6 py-4">Decision Status</th>
-                        <th className="px-6 py-4 text-right pr-8">Context</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-800/60 text-xs">
-                      {applications.map((app, i) => (
-                        <tr key={app.id} className="hover:bg-slate-900/40 transition-colors group">
-                          <td className="px-6 py-5">
-                            <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center font-black text-xs text-primary-500 shadow-inner">
-                                {app.applicant[0]}
-                              </div>
-                              <div>
-                                <p className="font-black text-white group-hover:text-primary-400 transition-colors tracking-tight">{app.applicant}</p>
-                                <p className="text-[9px] text-slate-500 mt-1 uppercase font-black tracking-widest leading-none">REF: {app.id}</p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-5 font-black text-slate-400 uppercase tracking-tighter">{app.date || 'TODAY'}</td>
-                          <td className="px-6 py-5">
-                             <Badge variant={app.status === 'PENDING' ? 'warning' : 'primary'}>{app.status === 'PENDING' ? 'URGENT' : 'NORMAL'}</Badge>
-                          </td>
-                          <td className="px-6 py-5">
-                             <Badge variant={app.status === 'APPROVED' ? 'success' : app.status === 'REJECTED' ? 'danger' : 'neutral'}>
-                               {app.status}
-                             </Badge>
-                          </td>
-                          <td className="px-6 py-5 text-right pr-8">
-                             <Button 
-                              variant="ghost" 
-                              size="xs" 
-                              className="gap-2 tracking-[0.2em] font-black group-hover:text-primary-400"
-                              onClick={() => navigate(`/caseworker/eligibility/${app.id}`)}
-                             >
-                                BROWSE
-                                <ArrowRight size={12} />
-                             </Button>
-                          </td>
+                <div className="overflow-x-auto text-center">
+                  {applications.length > 0 ? (
+                    <table className="w-full text-left">
+                      <thead>
+                        <tr className="text-slate-500 text-[10px] font-black uppercase tracking-widest border-b border-slate-800 bg-slate-950">
+                          <th className="px-6 py-4">Applicant Profile</th>
+                          <th className="px-6 py-4">Submission</th>
+                          <th className="px-6 py-4">SLA Status</th>
+                          <th className="px-6 py-4">Decision Status</th>
+                          <th className="px-6 py-4 text-right pr-8">Context</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="divide-y divide-slate-800/60 text-xs">
+                        {applications.map((app, i) => (
+                          <tr key={app.id} className="hover:bg-slate-900/40 transition-colors group">
+                            <td className="px-6 py-5">
+                              <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center font-black text-xs text-primary-500 shadow-inner">
+                                  {app.applicant[0]}
+                                </div>
+                                <div>
+                                  <p className="font-black text-white group-hover:text-primary-400 transition-colors tracking-tight">{app.applicant}</p>
+                                  <p className="text-[9px] text-slate-500 mt-1 uppercase font-black tracking-widest leading-none">REF: {app.id}</p>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-5 font-black text-slate-400 uppercase tracking-tighter">{app.date || 'TODAY'}</td>
+                            <td className="px-6 py-5">
+                               <Badge variant={app.status === 'PENDING' ? 'warning' : 'primary'}>{app.status === 'PENDING' ? 'URGENT' : 'NORMAL'}</Badge>
+                            </td>
+                            <td className="px-6 py-5">
+                               <Badge variant={app.status === 'APPROVED' ? 'success' : app.status === 'REJECTED' ? 'danger' : 'neutral'}>
+                                 {app.status}
+                               </Badge>
+                            </td>
+                            <td className="px-6 py-5 text-right pr-8">
+                               <Button 
+                                variant="ghost" 
+                                size="xs" 
+                                className="gap-2 tracking-[0.2em] font-black group-hover:text-primary-400"
+                                onClick={() => navigate(`/caseworker/eligibility/${app.id}`)}
+                               >
+                                  BROWSE
+                                  <ArrowRight size={12} />
+                               </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <div className="py-20 flex flex-col items-center justify-center">
+                      <div className="w-16 h-16 rounded-full bg-slate-950 border border-slate-800 flex items-center justify-center mb-4 text-slate-700">
+                         <ClipboardCheck size={32} />
+                      </div>
+                      <p className="text-xs font-black text-slate-500 uppercase tracking-widest">Global Queue Empty</p>
+                      <p className="text-[10px] text-slate-600 mt-2 italic">Standardizing cluster nodes... No incoming determinations detected.</p>
+                    </div>
+                  )}
                 </div>
               </Card>
 

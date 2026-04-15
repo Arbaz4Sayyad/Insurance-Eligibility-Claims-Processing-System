@@ -1,25 +1,39 @@
 package com.his.gateway.util;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
-import java.security.Key;
+import jakarta.annotation.PostConstruct;
+import java.io.InputStream;
+import java.security.KeyFactory;
+import java.security.PublicKey;
+import java.security.spec.X509EncodedKeySpec;
 
 @Component
 public class JwtUtils {
 
-    @Value("${jwt.secret}")
-    private String jwtSecret;
+    private PublicKey publicKey;
 
-    public void validateJwtToken(final String token) {
-        Jwts.parserBuilder().setSigningKey(getSignKey()).build().parseClaimsJws(token);
+    @PostConstruct
+    public void init() throws Exception {
+        this.publicKey = loadPublicKey("certs/public_key.der");
     }
 
-    private Key getSignKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
-        return Keys.hmacShaKeyFor(keyBytes);
+    private PublicKey loadPublicKey(String path) throws Exception {
+        InputStream is = new ClassPathResource(path).getInputStream();
+        byte[] keyBytes = is.readAllBytes();
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(keyBytes);
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+        return kf.generatePublic(spec);
+    }
+
+    public void validateJwtToken(final String token) {
+        Jwts.parserBuilder().setSigningKey(publicKey).build().parseClaimsJws(token);
+    }
+
+    public Claims getClaims(final String token) {
+        return Jwts.parserBuilder().setSigningKey(publicKey).build().parseClaimsJws(token).getBody();
     }
 }

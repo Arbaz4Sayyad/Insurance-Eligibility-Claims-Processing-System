@@ -14,10 +14,6 @@ public class RouteValidator {
             "/api/auth/signup",
             "/api/auth/login",
             "/api/auth/signin",
-            "/api/ar/",
-            "/api/applications/",
-            "/api/dc/",
-            "/api/analytics/",
             "/eureka"
     );
 

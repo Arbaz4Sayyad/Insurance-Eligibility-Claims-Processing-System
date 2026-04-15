@@ -17,16 +17,16 @@ const RegisterPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const validate = () => {
+  const validate = (data) => {
     const newErrors = {};
-    if (!formData.fullName) newErrors.fullName = 'Full name is required';
-    if (!formData.email) newErrors.email = 'Email is required';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid';
+    if (!data.fullName) newErrors.fullName = 'Full name is required';
+    if (!data.email) newErrors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(data.email)) newErrors.email = 'Email is invalid';
     
-    if (!formData.password) newErrors.password = 'Password is required';
-    else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
+    if (!data.password) newErrors.password = 'Password is required';
+    else if (data.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
     
-    if (formData.password !== formData.confirmPassword) {
+    if (data.password !== data.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
 
@@ -34,17 +34,55 @@ const RegisterPage = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => {
+      const updated = { ...prev, [name]: value };
+      // Clear specific error as user types
+      if (errors[name]) {
+        setErrors(prevErrors => {
+          const newErrors = { ...prevErrors };
+          delete newErrors[name];
+          return newErrors;
+        });
+      }
+      return updated;
+    });
+  };
+
   const handleSubmit = async (e) => {
+    // 1. CRITICAL: Stop default form submission immediately
     e.preventDefault();
-    if (!validate()) return;
+    console.log("Form Submitted", formData);
+
+    // 2. Validate current state
+    if (!validate(formData)) {
+      console.log("Validation Failed", errors);
+      return;
+    }
 
     setIsLoading(true);
+    setErrors({}); // Clear previous form errors
+
     try {
-      await authService.register(formData);
-      // Redirect to login on success
-      navigate('/login', { state: { message: 'Registration successful! Please login.' } });
+      console.log("Calling API...");
+      const response = await authService.register(formData);
+      console.log("API Response:", response);
+      
+      // 3. ONLY redirect after explicit success
+      if (response && response.success) {
+        console.log("Registration Successful, Navigating to /login");
+        navigate('/login', { 
+          state: { message: 'Registration successful! Please login with your email.' } 
+        });
+      } else {
+        console.log("Registration Failed Logic:", response?.message);
+        setErrors({ form: response?.message || 'Registration failed. Please try again.' });
+      }
     } catch (err) {
-      setErrors({ form: err.message || 'Registration failed' });
+      console.error('Registration API Error:', err);
+      // Display specific server error or generic message
+      setErrors({ form: err.message || 'An unexpected error occurred during registration.' });
     } finally {
       setIsLoading(false);
     }
@@ -84,67 +122,57 @@ const RegisterPage = () => {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="relative">
-                <Input
-                  label="Full Name"
-                  placeholder="John Doe"
-                  value={formData.fullName}
-                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                  error={errors.fullName}
-                  className="pl-10"
-                />
-                <User className="absolute left-3 top-[38px] text-secondary-400" size={18} />
-              </div>
-              <div className="relative">
-                <Input
-                  label="Phone Number"
-                  placeholder="+1 (555) 000-0000"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className="pl-10"
-                />
-                <Phone className="absolute left-3 top-[38px] text-secondary-400" size={18} />
-              </div>
+              <Input
+                label="Full Name"
+                name="fullName"
+                placeholder="John Doe"
+                value={formData.fullName}
+                onChange={handleChange}
+                error={errors.fullName}
+                leftIcon={<User />}
+              />
+              <Input
+                label="Phone Number"
+                name="phone"
+                placeholder="+1 (555) 000-0000"
+                value={formData.phone}
+                onChange={handleChange}
+                leftIcon={<Phone />}
+              />
             </div>
 
-            <div className="relative">
-              <Input
-                label="Email Address"
-                type="email"
-                placeholder="john@example.com"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                error={errors.email}
-                className="pl-10"
-              />
-              <Mail className="absolute left-3 top-[38px] text-secondary-400" size={18} />
-            </div>
+            <Input
+              label="Email Address"
+              name="email"
+              type="email"
+              placeholder="john@example.com"
+              value={formData.email}
+              onChange={handleChange}
+              error={errors.email}
+              leftIcon={<Mail />}
+            />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="relative">
-                <Input
-                  label="Password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  error={errors.password}
-                  className="pl-10"
-                />
-                <Lock className="absolute left-3 top-[38px] text-secondary-400" size={18} />
-              </div>
-              <div className="relative">
-                <Input
-                  label="Confirm Password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={formData.confirmPassword}
-                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                  error={errors.confirmPassword}
-                  className="pl-10"
-                />
-                <Lock className="absolute left-3 top-[38px] text-secondary-400" size={18} />
-              </div>
+              <Input
+                label="Password"
+                name="password"
+                type="password"
+                placeholder="••••••••"
+                value={formData.password}
+                onChange={handleChange}
+                error={errors.password}
+                leftIcon={<Lock />}
+              />
+              <Input
+                label="Confirm Password"
+                name="confirmPassword"
+                type="password"
+                placeholder="••••••••"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                error={errors.confirmPassword}
+                leftIcon={<Lock />}
+              />
             </div>
 
             <div className="pt-2">

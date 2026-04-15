@@ -142,29 +142,51 @@ const LoginPage = () => {
           </p>
         </Card>
 
-        {/* Mock Credentials Help (Premium Style) */}
+        {/* Sandbox Credentials (Interactive Premium Style) */}
         <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1 }}
-          className="mt-10 p-6 bg-slate-900/40 border border-slate-800 rounded-2xl backdrop-blur-sm shadow-xl"
+          className="mt-8 p-6 bg-slate-900/40 border border-slate-800/50 rounded-[28px] backdrop-blur-sm shadow-2xl relative group"
         >
-          <div className="flex items-center gap-2 mb-4">
-            <ShieldCheck size={14} className="text-emerald-500" />
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Sandbox Credentials</span>
+          <div className="absolute inset-0 bg-primary-500/5 rounded-[28px] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+          
+          <div className="flex items-center gap-3 mb-5 border-b border-slate-800/50 pb-4">
+            <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500">
+              <ShieldCheck size={16} />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-black text-white uppercase tracking-[0.2em]">Sandbox Vault</span>
+              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">Click any identity to pre-fill access</span>
+            </div>
           </div>
-          <div className="grid grid-cols-1 gap-3">
+
+          <div className="grid grid-cols-1 gap-2.5">
              {[
-               { role: 'Administrator', email: 'admin@iecs.com' },
-               { role: 'Caseworker', email: 'worker@iecs.com' },
-               { role: 'Citizen Account', email: 'citizen@iecs.com' }
+               { role: 'Administrator', email: 'admin@iecs.com', icon: 'zap' },
+               { role: 'Caseworker', email: 'caseworker@iecs.com', icon: 'shield' },
+               { role: 'Citizen Account', email: 'citizen@iecs.com', icon: 'mail' }
              ].map((cred) => (
-               <div key={cred.role} className="flex items-center justify-between p-2 rounded-lg bg-slate-950/50 border border-slate-800/50">
-                  <span className="text-[10px] font-bold text-slate-500 uppercase">{cred.role}</span>
-                  <span className="text-[10px] font-black text-slate-300 font-mono tracking-tight">{cred.email}</span>
-               </div>
+               <button 
+                 key={cred.role} 
+                 type="button"
+                 onClick={() => setFormData({ email: cred.email, password: 'password' })}
+                 className="flex items-center justify-between p-3 rounded-xl bg-slate-950/40 border border-slate-800/30 hover:border-primary-500/50 hover:bg-slate-950/80 transition-all group/cred"
+               >
+                  <div className="flex flex-col text-left">
+                    <span className="text-[9px] font-bold text-slate-500 group-hover/cred:text-primary-400 uppercase tracking-wider transition-colors">{cred.role}</span>
+                    <span className="text-[11px] font-black text-slate-300 group-hover/cred:text-white font-mono transition-colors">{cred.email}</span>
+                  </div>
+                  <div className="p-1.5 rounded-lg bg-slate-900 text-slate-600 group-hover/cred:text-primary-500 group-hover/cred:bg-primary-500/10 transition-all">
+                    <Zap size={12} className={cred.icon === 'zap' ? 'fill-current' : ''} />
+                  </div>
+               </button>
              ))}
-             <div className="text-[9px] text-slate-600 text-center mt-1 uppercase tracking-widest font-black">Standard secret: password</div>
+          </div>
+          <div className="mt-4 pt-3 border-t border-slate-800/50 flex items-center justify-center gap-2">
+             <div className="w-1 h-1 rounded-full bg-slate-700 animate-pulse" />
+             <span className="text-[9px] font-black text-slate-600 uppercase tracking-[0.3em]">Master Secret: password</span>
+             <div className="w-1 h-1 rounded-full bg-slate-700 animate-pulse" />
           </div>
         </motion.div>
       </motion.div>

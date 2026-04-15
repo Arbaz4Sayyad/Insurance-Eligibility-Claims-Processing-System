@@ -19,8 +19,13 @@ public class RuleEntity {
     private PlanEntity plan;
 
     @Column(nullable = false)
-    private String conditionExpression; // SpEL expression
+    private String conditionExpression; 
 
-    private Double benefitAmount; // Benefit calculation output
+    private Double benefitAmount; 
     private String denialReason;
+    
+    @Column(name = "rule_version")
+    private Integer version = 1;
+    
+    private String description;
 }

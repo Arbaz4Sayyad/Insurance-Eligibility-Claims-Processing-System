@@ -28,6 +28,10 @@ public class PdfService {
     private static final String OUTPUT_DIR = "notices/";
 
     public void generateNotice(EligibilityDeterminedEvent event) throws Exception {
+        // 0. Idempotency Check
+        if (noticeRepository.findByAppId(event.getAppId()).isPresent()) {
+            return; // Already generated
+        }
         
         // 1. Prepare Thymeleaf Context
         Context context = new Context();

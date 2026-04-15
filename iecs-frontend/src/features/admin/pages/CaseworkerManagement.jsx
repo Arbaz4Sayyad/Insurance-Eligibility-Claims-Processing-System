@@ -15,12 +15,12 @@ const CaseworkerManagement = () => {
   const { workers, toggleWorkerStatus, addWorker } = useStaff();
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newWorkerName, setNewWorkerName] = useState('');
+  const [newWorker, setNewWorker] = useState({ name: '', email: '', password: '' });
 
   const handleOnboard = () => {
-    if (newWorkerName.trim()) {
-      addWorker(newWorkerName);
-      setNewWorkerName('');
+    if (newWorker.name && newWorker.email && newWorker.password) {
+      addWorker(newWorker.name, newWorker.email, newWorker.password);
+      setNewWorker({ name: '', email: '', password: '' });
       setIsModalOpen(false);
     }
   };
@@ -156,8 +156,21 @@ const CaseworkerManagement = () => {
           <Input 
             label="Full Name" 
             placeholder="Jane Doe" 
-            value={newWorkerName}
-            onChange={(e) => setNewWorkerName(e.target.value)}
+            value={newWorker.name}
+            onChange={(e) => setNewWorker({ ...newWorker, name: e.target.value })}
+          />
+          <Input 
+            label="Professional Email" 
+            placeholder="jane@iecs.com" 
+            value={newWorker.email}
+            onChange={(e) => setNewWorker({ ...newWorker, email: e.target.value })}
+          />
+          <Input 
+            label="Initial Password" 
+            type="password"
+            placeholder="••••••••" 
+            value={newWorker.password}
+            onChange={(e) => setNewWorker({ ...newWorker, password: e.target.value })}
           />
           <div className="flex justify-end gap-4 mt-8">
             <Button variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>

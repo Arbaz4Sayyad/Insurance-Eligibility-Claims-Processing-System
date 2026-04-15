@@ -4,10 +4,8 @@ spring:
       globalcors:
         cors-configurations:
           '[/**]':
-            allowedOrigins:
-              - "http://localhost:5173"
-              - "http://localhost:3000"
-              - "http://localhost:18081"
+            allowedOriginPatterns:
+              - "*"
             allowedMethods:
               - GET
               - POST
@@ -15,7 +13,8 @@ spring:
               - DELETE
               - OPTIONS
               - PATCH
-            allowedHeaders: "*"
+            allowedHeaders:
+              - "*"
             allowCredentials: true
             maxAge: 3600
       routes:
@@ -39,12 +38,21 @@ spring:
           filters:
             - RewritePath=/api/applications/(?<remaining>.*), /api/ar/${remaining}
 
-        - id: user-service
+        - id: user-auth-service
           uri: lb://USER-SERVICE
           predicates:
             - Path=/api/auth/**
           filters:
+            - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
             - RewritePath=/api/auth/(?<remaining>.*), /api/auth/${remaining}
+
+        - id: user-api-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials
+            - RewritePath=/api/users/(?<remaining>.*), /api/users/${remaining}
 
         - id: ar-service
           uri: lb://AR-SERVICE

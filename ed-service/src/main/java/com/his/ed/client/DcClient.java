@@ -6,11 +6,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import java.util.List;
 
-@FeignClient(name = "dc-service", url = "${ed.client.dc.url}")
+@FeignClient(name = "dc-service")
 public interface DcClient {
     
     @GetMapping("/api/dc/summary/{appId}")
-    DcCaseResponse getCaseSummary(@PathVariable("appId") Long appId);
+    com.his.ed.payload.response.ApiResponse<java.util.Map<String, Object>> getCaseSummary(@PathVariable("appId") Long appId);
 
     @Data
     class DcCaseResponse {

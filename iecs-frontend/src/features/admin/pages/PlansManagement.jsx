@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Input, Badge, Skeleton } from '../../../components/common/UIComponents';
+import { Card, Button, Input, Badge } from '../../../components/common/UIComponents';
+import { Skeleton } from '../../../components/common/Skeleton';
 import { 
   Plus, 
   Search, 
@@ -15,16 +16,10 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-const initialPlans = [
-  { id: 1, name: 'Medical Assistance (MA)', category: 'Healthcare', status: 'Active', startDate: '2026-01-01', endDate: '2026-12-31', members: 4500 },
-  { id: 2, name: 'Food Support (SNAP)', category: 'Nutrition', status: 'Active', startDate: '2026-02-15', endDate: '2027-02-14', members: 3200 },
-  { id: 3, name: 'Cash Assistance (TANF)', category: 'Financial', status: 'Inactive', startDate: '2025-06-01', endDate: '2026-05-31', members: 0 },
-  { id: 4, name: 'Housing Support', category: 'Housing', status: 'Active', startDate: '2026-03-01', endDate: '2027-02-28', members: 1200 },
-];
+import planService from '../../../services/planService';
 
 const PlansManagement = () => {
-  const [plans, setPlans] = useState(initialPlans);
+  const [plans, setPlans] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState(null);
@@ -32,16 +27,31 @@ const PlansManagement = () => {
   const [newPlan, setNewPlan] = useState({ name: '', category: 'Healthcare', status: 'Active', startDate: '', endDate: '' });
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 800);
-    return () => clearTimeout(timer);
+    loadPlans();
   }, []);
 
-  const toggleStatus = (id) => {
-    setPlans(prev => prev.map(plan => 
-      plan.id === id 
-        ? { ...plan, status: plan.status === 'Active' ? 'Inactive' : 'Active' } 
-        : plan
-    ));
+  const loadPlans = async () => {
+    try {
+      setIsLoading(true);
+      const res = await planService.getAllPlans();
+      if (res.success) setPlans(res.data);
+    } catch (err) {
+      console.error('Failed to load plans:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const toggleStatus = async (plan) => {
+    try {
+      const updatedStatus = plan.status === 'Active' ? 'Inactive' : 'Active';
+      const res = await planService.updatePlan(plan.id, { ...plan, status: updatedStatus });
+      if (res.success) {
+        setPlans(prev => prev.map(p => p.id === plan.id ? res.data : p));
+      }
+    } catch (err) {
+      console.error('Failed to toggle status:', err);
+    }
   };
 
   const handleEdit = (plan) => {
@@ -50,14 +60,24 @@ const PlansManagement = () => {
     setIsModalOpen(true);
   };
 
-  const savePlan = () => {
+  const savePlan = async () => {
     if (!newPlan.name) return;
-    if (editingPlan) {
-      setPlans(prev => prev.map(p => p.id === editingPlan.id ? { ...newPlan } : p));
-    } else {
-      setPlans(prev => [...prev, { ...newPlan, id: Date.now(), members: 0 }]);
+    try {
+      if (editingPlan) {
+        const res = await planService.updatePlan(editingPlan.id, newPlan);
+        if (res.success) {
+          setPlans(prev => prev.map(p => p.id === editingPlan.id ? res.data : p));
+        }
+      } else {
+        const res = await planService.createPlan(newPlan);
+        if (res.success) {
+          setPlans(prev => [...prev, res.data]);
+        }
+      }
+      closeModal();
+    } catch (err) {
+      console.error('Failed to save plan:', err);
     }
-    closeModal();
   };
 
   const closeModal = () => {
@@ -185,7 +205,7 @@ const PlansManagement = () => {
                            <Edit2 size={16} />
                          </button>
                          <button 
-                          onClick={() => toggleStatus(plan.id)}
+                          onClick={() => toggleStatus(plan)}
                           className={`p-2 rounded-lg transition-all ${
                             plan.status === 'Active' ? 'text-orange-500 hover:bg-orange-500/10' : 'text-emerald-500 hover:bg-emerald-500/10'
                           }`}

@@ -1,3 +1,5 @@
+package com.his.ar.controller;
+
 import com.his.ar.model.ApplicationEntity;
 import com.his.ar.model.CitizenEntity;
 import com.his.ar.model.WorkflowStatus;
@@ -7,6 +9,8 @@ import com.his.ar.payload.response.ArResponse;
 import com.his.ar.repository.ApplicationRepository;
 import com.his.ar.repository.CitizenRepository;
 import com.his.ar.repository.OutboxEventRepository;
+import com.his.ar.model.PlanEntity;
+import com.his.ar.repository.PlanRepository;
 import com.his.ar.model.OutboxEvent;
 import com.his.ar.util.EncryptionService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,10 +22,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.transaction.annotation.Transactional;
 
+import lombok.extern.slf4j.Slf4j;
 import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/ar")
+@Slf4j
 public class ArController {
 
     @Autowired
@@ -38,6 +44,9 @@ public class ArController {
 
     @Autowired
     private OutboxEventRepository outboxEventRepository;
+
+    @Autowired
+    private PlanRepository planRepository;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -65,9 +74,14 @@ public class ArController {
                             .dob(request.getDob())
                             .gender(request.getGender())
                             .ssn(encryptedSsn)
+                            .userId(request.getUserId())
                             .build());
 
             if (citizen.getId() == null) {
+                citizen = citizenRepository.save(citizen);
+            } else if (citizen.getUserId() == null) {
+                // Retroactively link userId if first time submitting with identity
+                citizen.setUserId(request.getUserId());
                 citizen = citizenRepository.save(citizen);
             }
 
@@ -91,8 +105,10 @@ public class ArController {
                     .build();
             
             OutboxEvent outboxEvent = OutboxEvent.builder()
+                    .eventId(java.util.UUID.randomUUID())
                     .eventType("application.created")
                     .topic("applicationCreated-out-0")
+                    .aggregateId(application.getId())
                     .payload(objectMapper.writeValueAsString(event))
                     .status("PENDING")
                     .createdAt(LocalDateTime.now())
@@ -165,7 +181,59 @@ public class ArController {
 
     @GetMapping("/citizen/{citizenId}")
     public ResponseEntity<ApiResponse<java.util.List<ApplicationEntity>>> getApplicationsByCitizen(@PathVariable Long citizenId) {
-        java.util.List<ApplicationEntity> apps = applicationRepository.findByCitizen_Id(citizenId);
+        // First try to find by User ID (preferred for cross-service sync)
+        java.util.List<ApplicationEntity> apps = applicationRepository.findByCitizen_UserId(citizenId);
+        
+        // Fallback to local citizen ID for backward compatibility
+        if (apps.isEmpty()) {
+            apps = applicationRepository.findByCitizen_Id(citizenId);
+        }
+        
         return ResponseEntity.ok(ApiResponse.success(apps, "Citizen applications retrieved"));
+    }
+
+    // --- Plan Management Endpoints ---
+
+    @GetMapping("/plans")
+    public ResponseEntity<ApiResponse<java.util.List<PlanEntity>>> getAllPlans() {
+        try {
+            log.info("Fetching all plans...");
+            java.util.List<PlanEntity> plans = planRepository.findAll();
+            log.info("Found {} plans. Attempting manual serialization to test Jackson...", plans.size());
+            
+            // Manual serialization test
+            String jsonTest = objectMapper.writeValueAsString(plans);
+            log.info("Manual serialization successful: {}", jsonTest);
+            
+            return ResponseEntity.ok(ApiResponse.success(plans, "Plans retrieved successfully"));
+        } catch (Exception e) {
+            log.error("Error in getAllPlans: ", e);
+            return ResponseEntity.internalServerError().body(ApiResponse.error("INTERNAL_ERROR", e.getMessage(), "Failed to retrieve plans"));
+        }
+    }
+
+    @PostMapping("/plans")
+    public ResponseEntity<ApiResponse<PlanEntity>> createPlan(@RequestBody PlanEntity plan) {
+        try {
+            log.info("Creating new plan: {}", plan.getName());
+            if (plan.getMembers() == null) plan.setMembers(0L);
+            PlanEntity savedPlan = planRepository.save(plan);
+            return ResponseEntity.ok(ApiResponse.success(savedPlan, "Plan created successfully"));
+        } catch (Exception e) {
+            log.error("Error creating plan: ", e);
+            return ResponseEntity.internalServerError().body(ApiResponse.error("INTERNAL_ERROR", e.getMessage(), "Failed to save plan"));
+        }
+    }
+
+    @PutMapping("/plans/{id}")
+    public ResponseEntity<ApiResponse<PlanEntity>> updatePlan(@PathVariable Long id, @RequestBody PlanEntity plan) {
+        PlanEntity existing = planRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Plan not found"));
+        existing.setName(plan.getName());
+        existing.setCategory(plan.getCategory());
+        existing.setStatus(plan.getStatus());
+        existing.setStartDate(plan.getStartDate());
+        existing.setEndDate(plan.getEndDate());
+        return ResponseEntity.ok(ApiResponse.success(planRepository.save(existing), "Plan updated successfully"));
     }
 }

@@ -13,13 +13,13 @@ const authService = {
    */
   login: async (credentials) => {
     // Expected backend response: { success: true, data: { token, role, userId } }
-    const response = await apiClient.post('/users/login', credentials);
+    const response = await apiClient.post('/auth/signin', credentials);
     
     // Automatic Storage
     if (response.success && response.data?.token) {
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('role', response.data.role);
-      localStorage.setItem('userId', response.data.userId);
+      localStorage.setItem('iecs-token', response.data.token);
+      localStorage.setItem('iecs-role', response.data.role);
+      localStorage.setItem('iecs-userId', response.data.userId);
     }
     
     return response;
@@ -37,9 +37,9 @@ const authService = {
    * Securely destroy active session and prune localStorage 
    */
   logout: () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
-    localStorage.removeItem('userId');
+    localStorage.removeItem('iecs-token');
+    localStorage.removeItem('iecs-role');
+    localStorage.removeItem('iecs-userId');
     // Note: React Router will pick this up automatically or we can emit an event here
   },
 

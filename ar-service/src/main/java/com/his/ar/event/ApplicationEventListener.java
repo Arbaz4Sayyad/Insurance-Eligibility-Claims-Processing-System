@@ -3,6 +3,7 @@ package com.his.ar.event;
 import com.his.ar.model.ApplicationEntity;
 import com.his.ar.model.WorkflowStatus;
 import com.his.ar.repository.ApplicationRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +12,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 @Configuration
+@Slf4j
 public class ApplicationEventListener {
 
     @Autowired
@@ -22,12 +24,16 @@ public class ApplicationEventListener {
             try {
                 Long appId = Long.valueOf(event.get("appId").toString());
                 applicationRepository.findById(appId).ifPresent(app -> {
-                    app.setWorkflowStatus(WorkflowStatus.DATA_COLLECTION_COMPLETED);
-                    applicationRepository.save(app);
+                    if (app.getWorkflowStatus() != WorkflowStatus.DATA_COLLECTION_COMPLETED) {
+                        app.setWorkflowStatus(WorkflowStatus.DATA_COLLECTION_COMPLETED);
+                        applicationRepository.save(app);
+                        log.info("Saga ID {}: Data collection completed.", appId);
+                    } else {
+                        log.debug("Saga ID {}: Data collection already processed. Marking as idempotent.", appId);
+                    }
                 });
             } catch (Exception e) {
-                // Log and push to DLQ in a real scenario
-                e.printStackTrace();
+                log.error("Error in dataCapturedConsumer: ", e);
             }
         };
     }
@@ -40,17 +46,20 @@ public class ApplicationEventListener {
                 String status = event.getOrDefault("status", "UNKNOWN").toString();
                 
                 applicationRepository.findById(appId).ifPresent(app -> {
-                    if ("APPROVED".equals(status)) {
-                        app.setWorkflowStatus(WorkflowStatus.ELIGIBILITY_APPROVED);
-                        app.setCaseStatus("APPROVED");
+                    WorkflowStatus targetStatus = "APPROVED".equals(status) ? 
+                        WorkflowStatus.ELIGIBILITY_APPROVED : WorkflowStatus.ELIGIBILITY_REJECTED;
+                    
+                    if (app.getWorkflowStatus() != targetStatus) {
+                        app.setWorkflowStatus(targetStatus);
+                        app.setCaseStatus(status);
+                        applicationRepository.save(app);
+                        log.info("Saga ID {}: Eligibility outcome updated to {}.", appId, status);
                     } else {
-                        app.setWorkflowStatus(WorkflowStatus.ELIGIBILITY_REJECTED);
-                        app.setCaseStatus("REJECTED");
+                        log.debug("Saga ID {}: Eligibility outcome already processed. Marking as idempotent.", appId);
                     }
-                    applicationRepository.save(app);
                 });
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("Error in eligibilityDeterminedConsumer: ", e);
             }
         };
     }

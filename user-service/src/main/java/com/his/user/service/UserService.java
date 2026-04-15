@@ -3,6 +3,8 @@ package com.his.user.service;
 import com.his.user.model.Role;
 import com.his.user.model.RoleName;
 import com.his.user.model.User;
+import com.his.user.payload.request.ProfileUpdateRequest;
+import com.his.user.payload.response.UserStatsDTO;
 import com.his.user.repository.RoleRepository;
 import com.his.user.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,11 +33,7 @@ public class UserService {
     }
 
     public List<User> getUsersByRole(RoleName roleName) {
-        Role role = roleRepository.findByName(roleName)
-                .orElseThrow(() -> new RuntimeException("Role not found"));
-        return userRepository.findAll().stream()
-                .filter(u -> u.getRoles().contains(role))
-                .toList();
+        return userRepository.findAllByRoles_Name(roleName);
     }
 
     public Optional<User> getUserById(Long id) {
@@ -74,5 +72,31 @@ public class UserService {
     
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
+    }
+
+    public UserStatsDTO getUserStats() {
+        return UserStatsDTO.builder()
+                .totalUsers(userRepository.count())
+                .activeCaseworkers(userRepository.countByRoles_Name(RoleName.ROLE_CASE_WORKER))
+                .build();
+    }
+
+    public User updateProfile(Long id, ProfileUpdateRequest profileData) {
+        return userRepository.findById(id).map(user -> {
+            if (profileData.getEmail() != null) user.setEmail(profileData.getEmail());
+            if (profileData.getUsername() != null) user.setUsername(profileData.getUsername());
+            if (profileData.getFirstName() != null) user.setFirstName(profileData.getFirstName());
+            if (profileData.getLastName() != null) user.setLastName(profileData.getLastName());
+            if (profileData.getPhone() != null) user.setPhone(profileData.getPhone());
+            if (profileData.getAddress() != null) user.setAddress(profileData.getAddress());
+            if (profileData.getCity() != null) user.setCity(profileData.getCity());
+            if (profileData.getState() != null) user.setState(profileData.getState());
+            if (profileData.getZip() != null) user.setZip(profileData.getZip());
+            if (profileData.getSsn() != null) user.setSsn(profileData.getSsn());
+            if (profileData.getPreferences() != null) user.setPreferences(profileData.getPreferences());
+            if (profileData.getMfaEnabled() != null) user.setMfaEnabled(profileData.getMfaEnabled());
+            
+            return userRepository.save(user);
+        }).orElseThrow(() -> new RuntimeException("User not found"));
     }
 }

@@ -24,6 +24,19 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
 
+    private String firstName;
+    private String lastName;
+    private String phone;
+    private String address;
+    private String city;
+    private String state;
+    private String zip;
+    private String ssn;
+    private Boolean mfaEnabled = false;
+
+    @Column(columnDefinition = "TEXT")
+    private String preferences;
+
     private boolean enabled = true;
 
     @ManyToMany(fetch = FetchType.EAGER)

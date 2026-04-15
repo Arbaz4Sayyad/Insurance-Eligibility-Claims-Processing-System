@@ -10,4 +10,5 @@ public class ArRequest {
     private LocalDate dob;
     private String gender;
     private String ssn;
+    private Long userId;
 }

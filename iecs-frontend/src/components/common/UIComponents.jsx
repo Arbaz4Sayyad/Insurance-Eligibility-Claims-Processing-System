@@ -55,7 +55,7 @@ const Input = React.forwardRef(({ className, label, error, leftIcon, rightIcon, 
       )}
       <div className="relative group/input w-full">
         {leftIcon && (
-          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within/input:text-primary-500 transition-colors pointer-events-none z-10">
+          <div className="absolute left-4 inset-y-0 flex items-center text-slate-600 group-focus-within/input:text-primary-500 transition-colors pointer-events-none z-10 -translate-y-[1.5px]">
             {React.cloneElement(leftIcon, { size: leftIcon.props.size || 18 })}
           </div>
         )}
@@ -63,15 +63,15 @@ const Input = React.forwardRef(({ className, label, error, leftIcon, rightIcon, 
           ref={ref}
           className={twMerge(
             'flex h-11 w-full rounded-xl border border-slate-700 bg-slate-950/60 px-4 py-2 text-sm text-foreground placeholder:text-slate-600 focus:outline-none focus:ring-1 focus:ring-primary-500/50 focus:border-primary-500/30 disabled:cursor-not-allowed disabled:opacity-50 transition-all hover:bg-slate-900/50',
-            leftIcon && 'pl-11',
-            rightIcon && 'pr-11',
+            leftIcon && 'pl-12',
+            rightIcon && 'pr-12',
             error && 'border-red-500/30 focus:ring-red-500/50 focus:border-red-500/30',
             className
           )}
           {...props}
         />
         {rightIcon && (
-          <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 group-hover/input:text-slate-400 transition-colors z-10">
+          <div className="absolute right-4 inset-y-0 flex items-center text-slate-600 group-hover/input:text-slate-400 transition-colors z-10 -translate-y-[1.5px]">
             {React.cloneElement(rightIcon, { size: rightIcon.props.size || 18 })}
           </div>
         )}
@@ -156,14 +156,5 @@ const Modal = ({ isOpen, onClose, title, children }) => {
   );
 };
 
-const Skeleton = ({ className, ...props }) => {
-  return (
-    <div
-      className={twMerge("animate-pulse rounded-md bg-slate-800/80", className)}
-      {...props}
-    />
-  );
-};
-
-export { Button, Input, Card, Badge, Skeleton, Modal };
+export { Button, Input, Card, Badge, Modal };
 

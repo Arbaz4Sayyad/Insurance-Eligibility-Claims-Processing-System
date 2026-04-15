@@ -28,10 +28,13 @@ const ReviewHistory = lazy(() => import('../features/caseworker/pages/ReviewHist
 const CommunicationCenter = lazy(() => import('../features/caseworker/pages/CommunicationCenter'));
 
 const CitizenDashboard = lazy(() => import('../features/citizen/pages/CitizenDashboard'));
+const MyApplications = lazy(() => import('../features/citizen/pages/MyApplications'));
 const Apply = lazy(() => import('../features/citizen/pages/Apply'));
 const CitizenProfile = lazy(() => import('../features/citizen/pages/CitizenProfile'));
 
 const NotificationInbox = lazy(() => import('../features/common/NotificationInbox'));
+const SecuritySync = lazy(() => import('../features/citizen/pages/SecuritySync'));
+const Preferences = lazy(() => import('../features/citizen/pages/Preferences'));
 
 const AppRoutes = () => {
   const { user } = useAuth();
@@ -84,8 +87,10 @@ const AppRoutes = () => {
             <Route index element={<Navigate to="/dashboard/home" replace />} />
             <Route path="home" element={<CitizenDashboard />} />
             <Route path="apply" element={<Apply />} />
-            <Route path="status" element={<CitizenDashboard />} />
+            <Route path="status" element={<MyApplications />} />
             <Route path="profile" element={<CitizenProfile />} />
+            <Route path="security" element={<SecuritySync />} />
+            <Route path="settings" element={<Preferences />} />
             <Route path="notifications" element={<NotificationInbox />} />
           </Route>
 

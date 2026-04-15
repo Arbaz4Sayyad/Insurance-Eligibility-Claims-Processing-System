@@ -13,6 +13,7 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import lombok.extern.slf4j.Slf4j;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
@@ -20,8 +21,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import java.util.function.Supplier;
 
 @Service
+@Slf4j
 public class DashboardService {
 
     @Autowired
@@ -43,19 +48,27 @@ public class DashboardService {
         
         // 1. Parallelize calls to User, AR, and Analytics services
         CompletableFuture<ApiResponse<UserClient.UserStatsResponse>> userStatsFuture = 
-            CompletableFuture.supplyAsync(() -> userClient.getUserStats());
+            CompletableFuture.supplyAsync(withContext(() -> userClient.getUserStats()))
+                .exceptionally(ex -> {
+                    log.error("User Service stats fetch failed: ", ex);
+                    return (ApiResponse<UserClient.UserStatsResponse>) ApiResponse.success(new UserClient.UserStatsResponse(), "Fallback used");
+                });
 
         CompletableFuture<ApiResponse<ArClient.ApplicationPageResponse>> arStatsFuture = 
-            CompletableFuture.supplyAsync(() -> arClient.getAllApplications(null, 0, 1));
+            CompletableFuture.supplyAsync(withContext(() -> arClient.getAllApplications(null, 0, 1)))
+                .exceptionally(ex -> {
+                    log.error("AR Service stats fetch failed: ", ex);
+                    return (ApiResponse<ArClient.ApplicationPageResponse>) ApiResponse.success(new ArClient.ApplicationPageResponse(), "Fallback used");
+                });
 
         CompletableFuture<List<AnalyticsClient.SystemLog>> logsFuture = 
-            CompletableFuture.supplyAsync(() -> {
+            CompletableFuture.supplyAsync(withContext(() -> {
                 try {
                     return analyticsClient.getLogs();
                 } catch (Exception e) {
-                    return Collections.emptyList();
+                    return (List<AnalyticsClient.SystemLog>) Collections.<AnalyticsClient.SystemLog>emptyList();
                 }
-            });
+            })).exceptionally(ex -> (List<AnalyticsClient.SystemLog>) Collections.<AnalyticsClient.SystemLog>emptyList());
 
         // 2. Wait for all to complete (Joint performance)
         CompletableFuture.allOf(userStatsFuture, arStatsFuture, logsFuture).join();
@@ -93,13 +106,13 @@ public class DashboardService {
     public CaseworkerDashboardResponse getCaseworkerDashboard() {
         // 1. Parallelize calls to AR and ED services
         CompletableFuture<ApiResponse<Map<String, Long>>> arStatsFuture =
-                CompletableFuture.supplyAsync(() -> arClient.getStatusCounts());
+                CompletableFuture.supplyAsync(withContext(() -> arClient.getStatusCounts()));
 
         CompletableFuture<ApiResponse<ArClient.ApplicationPageResponse>> pendingQueueFuture =
-                CompletableFuture.supplyAsync(() -> arClient.getAllApplications("PENDING", 0, 10));
+                CompletableFuture.supplyAsync(withContext(() -> arClient.getAllApplications("PENDING", 0, 10)));
 
         CompletableFuture<ApiResponse<EdClient.EligibilityStatsResponse>> edStatsFuture =
-                CompletableFuture.supplyAsync(() -> edClient.getStats());
+                CompletableFuture.supplyAsync(withContext(() -> edClient.getStats()));
 
         // 2. Wait for all to complete
         CompletableFuture.allOf(arStatsFuture, pendingQueueFuture, edStatsFuture).join();
@@ -164,7 +177,7 @@ public class DashboardService {
     public CitizenDashboardResponse getCitizenDashboard(Long citizenId) {
         // 1. Fetch All Applications for Citizen
         CompletableFuture<ApiResponse<List<ArClient.Application>>> appsFuture =
-                CompletableFuture.supplyAsync(() -> arClient.getApplicationsByCitizen(citizenId));
+                CompletableFuture.supplyAsync(withContext(() -> arClient.getApplicationsByCitizen(citizenId)));
 
         // Wait to determine the most recent Application ID to fetch Benefit info
         appsFuture.join();
@@ -192,7 +205,7 @@ public class DashboardService {
             // 2. Fetch BI data for the latest app if needed
             CompletableFuture<ApiResponse<BiClient.BenefitAccount>> biFuture = null;
             if ("BENEFIT_ISSUED".equals(latestApp.getWorkflowStatus())) {
-                biFuture = CompletableFuture.supplyAsync(() -> biClient.getStatus(latestApp.getId()));
+                biFuture = CompletableFuture.supplyAsync(withContext(() -> biClient.getStatus(latestApp.getId())));
             }
 
             // Map Applications
@@ -247,5 +260,17 @@ public class DashboardService {
                 .activeApplications(Collections.emptyList())
                 .nextSteps(List.of("System is temporarily degraded. Please check back later."))
                 .build();
+    }
+
+    private <T> Supplier<T> withContext(Supplier<T> supplier) {
+        RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
+        return () -> {
+            try {
+                RequestContextHolder.setRequestAttributes(attributes);
+                return supplier.get();
+            } finally {
+                RequestContextHolder.resetRequestAttributes();
+            }
+        };
     }
 }

@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Singleton Axios Instance
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:18080/api',
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
@@ -14,10 +14,13 @@ const apiClient = axios.create({
 apiClient.interceptors.request.use(
   (config) => {
     // Attempt to grab token from localStorage
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('iecs-token');
     
-    if (token) {
+    // Improved check: Ensure token is present and has proper JWT structure (basic)
+    if (token && token.split('.').length === 3) {
       config.headers['Authorization'] = `Bearer ${token}`;
+    } else if (token) {
+       console.warn(`[API] Malformed token detected (Length: ${token.length}), skipping Authorization header`);
     }
     
     return config;
@@ -48,8 +51,8 @@ apiClient.interceptors.response.use(
       
       if (status === 401) {
         // Handle Session Expiration
-        localStorage.removeItem('token');
-        localStorage.removeItem('role');
+        localStorage.removeItem('iecs-token');
+        localStorage.removeItem('iecs-role');
         // Dispatch custom event to trigger React Router redirect centrally
         window.dispatchEvent(new Event('iecs-session-expired'));
         normalizedError.message = 'Session expired. Please log in again.';

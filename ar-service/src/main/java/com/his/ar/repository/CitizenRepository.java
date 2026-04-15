@@ -6,4 +6,5 @@ import java.util.Optional;
 
 public interface CitizenRepository extends JpaRepository<CitizenEntity, Long> {
     Optional<CitizenEntity> findBySsn(String ssn);
+    Optional<CitizenEntity> findByUserId(Long userId);
 }

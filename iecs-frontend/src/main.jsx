@@ -13,9 +13,9 @@ import App from './App.jsx'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
-      <NotificationProvider>
-        <ThemeProvider>
-          <AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <NotificationProvider>
             <StaffProvider>
               <ApplicationProvider>
                 <AxiosInterceptor>
@@ -23,9 +23,9 @@ createRoot(document.getElementById('root')).render(
                 </AxiosInterceptor>
               </ApplicationProvider>
             </StaffProvider>
-          </AuthProvider>
-        </ThemeProvider>
-      </NotificationProvider>
+          </NotificationProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </BrowserRouter>
   </StrictMode>,
 )

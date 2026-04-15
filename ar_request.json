@@ -1,0 +1,8 @@
+{
+  "firstName": "Test",
+  "lastName": "Citizen",
+  "dob": "1990-01-01",
+  "gender": "Male",
+  "ssn": "123456789",
+  "userId": 6
+}

@@ -10,4 +10,5 @@ public interface ApplicationRepository extends JpaRepository<ApplicationEntity, 
     Page<ApplicationEntity> findByCaseStatus(String caseStatus, Pageable pageable);
     long countByCaseStatus(String caseStatus);
     List<ApplicationEntity> findByCitizen_Id(Long citizenId);
+    List<ApplicationEntity> findByCitizen_UserId(Long userId);
 }
